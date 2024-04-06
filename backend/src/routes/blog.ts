@@ -22,7 +22,8 @@ blogRouter.use("/*", async (c, next) => {
     c.status(403);
     return c.json({ error: "unauthorized" });
   }
-  next();
+
+  await next();
 });
 
 blogRouter.post("/", async (c) => {
@@ -110,6 +111,12 @@ blogRouter.get("/bulk", async (c) => {
       },
     },
   });
+
+  if (!blogs) {
+    return c.json({
+      message: "no blogs found",
+    });
+  }
 
   return c.json({
     blogs,
