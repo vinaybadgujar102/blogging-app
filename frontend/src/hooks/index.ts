@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { BACKEND_URL } from "../config";
 import axios from "axios";
 
-interface Blog {
+export interface Blog {
   title: string;
   content: string;
   author: {
@@ -31,4 +31,26 @@ export const useBlogs = () => {
   }, []);
 
   return { loading, blogs };
+};
+
+export const useBlog = ({ id }: { id: string }) => {
+  const [loading, setLoading] = useState(true);
+  const [blog, setBlog] = useState<Blog>();
+
+  useEffect(() => {
+    axios
+      .get(`${BACKEND_URL}/api/v1/blog/${id}`, {
+        headers: {
+          Authorization: localStorage.getItem("token"),
+        },
+      })
+      .then((response) => {
+        console.log(response.data);
+
+        setBlog(response.data.blog);
+        setLoading(false);
+      });
+  }, [id]);
+
+  return { loading, blog };
 };
