@@ -5,6 +5,7 @@ import { useBlogs } from "../hooks";
 
 const Blogs = () => {
   const { loading, blogs } = useBlogs();
+  console.log(blogs);
 
   if (loading) {
     return <div>Loading...</div>;
@@ -21,7 +22,7 @@ const Blogs = () => {
               id={blog.id}
               title={blog.title || "Anonymous"}
               content={blog.content}
-              authorName={blog.author.name}
+              authorName="Vinay Badgujar"
               publishedDate={"2 Feb"}
             />
           ))}

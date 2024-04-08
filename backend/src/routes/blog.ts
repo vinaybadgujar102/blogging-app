@@ -18,12 +18,11 @@ blogRouter.use("/*", async (c, next) => {
   const user = await verify(authHeader, c.env.JWT_SECRET);
   if (user) {
     c.set("userId", user.id);
+    await next();
   } else {
     c.status(403);
     return c.json({ error: "unauthorized" });
   }
-
-  await next();
 });
 
 blogRouter.post("/", async (c) => {
@@ -32,7 +31,7 @@ blogRouter.post("/", async (c) => {
   }).$extends(withAccelerate());
 
   const body = await c.req.json();
-  const authorId = c.get("userId") || "";
+  const authorId = c.get("userId");
 
   const post = await prisma.post.create({
     data: {
@@ -69,17 +68,39 @@ blogRouter.put("/", async (c) => {
   });
 });
 
-blogRouter.get("/:id", async (c) => {
+blogRouter.get("/bulk", async (c) => {
   const prisma = new PrismaClient({
     datasourceUrl: c.env?.DATABASE_URL,
   }).$extends(withAccelerate());
 
-  try {
-    const body = await c.req.json();
+  const blogs = await prisma.post.findMany({
+    select: {
+      content: true,
+      title: true,
+      id: true,
+      author: {
+        select: {
+          name: true,
+        },
+      },
+    },
+  });
 
+  return c.json({
+    blogs,
+  });
+});
+
+blogRouter.get("/:id", async (c) => {
+  const prisma = new PrismaClient({
+    datasourceUrl: c.env?.DATABASE_URL,
+  }).$extends(withAccelerate());
+  const id = c.req.param("id");
+
+  try {
     const post = await prisma.post.findFirst({
       where: {
-        id: body.id,
+        id: id,
       },
       select: {
         id: true,
@@ -102,33 +123,4 @@ blogRouter.get("/:id", async (c) => {
       message: "invalid id",
     });
   }
-});
-
-blogRouter.get("/bulk", async (c) => {
-  const prisma = new PrismaClient({
-    datasourceUrl: c.env?.DATABASE_URL,
-  }).$extends(withAccelerate());
-
-  const blogs = await prisma.post.findMany({
-    select: {
-      content: true,
-      title: true,
-      id: true,
-      author: {
-        select: {
-          name: true,
-        },
-      },
-    },
-  });
-
-  if (!blogs) {
-    return c.json({
-      message: "no blogs found",
-    });
-  }
-
-  return c.json({
-    blogs,
-  });
 });
