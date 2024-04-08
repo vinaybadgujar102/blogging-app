@@ -2,13 +2,25 @@ import React from "react";
 import BlogCard from "../components/BlogCard";
 import Appbar from "../components/Appbar";
 import { useBlogs } from "../hooks";
+import Skeleton from "../components/Skeleton";
 
 const Blogs = () => {
   const { loading, blogs } = useBlogs();
   console.log(blogs);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex justify-center">
+        <div>
+          <Skeleton />
+          <Skeleton />
+          <Skeleton />
+          <Skeleton />
+          <Skeleton />
+          <Skeleton />
+        </div>
+      </div>
+    );
   }
 
   return (
